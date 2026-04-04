@@ -3,145 +3,309 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aimos</title>
+    <title>Aimos - Ambient Vibe Controller</title>
     <style>
       :root {
-        --bg-color: #1a1a1a;
-        --accent-color: #ffffff;
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --text-color: #ffffff;
       }
+
       body {
         margin: 0;
         padding: 0;
+        font-family: "Inter", sans-serif;
+        color: var(--text-color);
         height: 100vh;
         display: flex;
-        flex-direction: column;
         justify-content: center;
-        background-color: var(--bg-color);
-        color: var(--accent-color);
-        font-family:
-          "Inter",
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          Roboto,
-          sans-serif;
-        transition: background-color 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+        align-items: center;
+        background: #000;
+        transition: background 1.5s ease;
         overflow: hidden;
       }
 
-      .glass-card {
-        background: rgba(255, 255, 255, 0.55);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 3rem 2rem;
+      .glass-container {
+        width: 350px;
+        height: 600px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
         border-radius: 30px;
-        text-align: center;
-        width: 85%;
-        max-width: 450px;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        text-align: center;
       }
 
       h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0 0 1rem 0;
-        letter-spacing: -0.02em;
+        font-weight: 300;
+        letter-spacing: 2px;
+        margin-top: 10px;
       }
 
-      #reason {
+      .vibe-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 20px;
+        margin-top: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 30px;
+      }
+
+      .vibe-content {
+        text-align: left;
+        margin: 20px 0;
+      }
+
+      .vibe-content .label {
         font-size: 1.1rem;
-        line-height: 1.6;
+        margin-bottom: 5px;
         opacity: 0.7;
-        margin-bottom: 2rem;
-        min-height: 3.2em;
       }
 
-      .spotify-status {
+      .vibe-content h2 {
+        font-size: 2.2rem;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .spotify-widget {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+      }
+
+      #album-art {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+      }
+
+      .track-info {
+        text-align: left;
+        font-size: 0.8rem;
+        overflow: hidden;
+      }
+
+      .track-info p {
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #playlist-name {
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      .spotify-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 15px;
+        opacity: 0.6;
+      }
+
+      .controls {
+        margin-top: 30px;
+      }
+
+      .button-group {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .power-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8rem;
-        font-size: 0.9rem;
-        color: #1db954;
-        font-weight: 600;
-        margin-bottom: 2.5rem;
-      }
-
-      button {
-        background-color: var(--accent-color);
-        color: black;
-        border: none;
-        padding: 1.2rem 2.5rem;
-        font-size: 1.1rem;
-        font-weight: 700;
-        border-radius: 100px;
-        cursor: pointer;
+        gap: 8px;
         transition: all 0.3s ease;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        border: none;
+        color: white;
       }
 
-      button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
-        opacity: 0.9;
+      .power-btn.off {
+        background-color: #1a1a1a;
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      button:active {
-        transform: translateY(0);
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-        opacity: 0.9;
+      .power-btn.on {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        z-index: 1;
       }
 
-      .loading-spinner {
-        display: none;
-        margin-top: 1rem;
-        font-size: 0.8rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+      .power-btn.on::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        bottom: -2px;
+        right: -2px;
+        background: linear-gradient(
+          45deg,
+          #ff0000,
+          #ff7f00,
+          #ffff00,
+          #00ff00,
+          #0000ff,
+          #4b0082,
+          #9400d3
+        );
+        border-radius: 14px;
+        z-index: -1;
+        opacity: 0.5;
+        filter: blur(4px);
+        transition: opacity 0.3s ease;
+      }
+
+      .power-btn:active {
+        transform: scale(0.96);
+      }
+
+      .system-status {
+        margin-top: 15px;
+        font-size: 0.7rem;
+        opacity: 0.6;
+      }
+
+      #status-dot {
+        color: #666;
+        transition: color 0.5s ease;
       }
     </style>
   </head>
-    <body>
-        <div class="glass-card">
-            <h1 id="vibe-name">Loading...</h1>
-            <p id="reason">Syncing your room with London's atmosphere.</p>
-        
-        <div class="spotify-status">
-            <span id="spotify-query">Waiting for AI input...</span>
+  <body>
+    <div class="glass-container">
+      <header>
+        <h1>Aimos</h1>
+      </header>
+
+      <main class="vibe-card">
+        <div class="vibe-content">
+          <p class="label">Vibe:</p>
+          <h2 id="vibe-name">Ready</h2>
         </div>
-        
-        <button id="sync-btn" onclick="updateVibe()">SYNC VIBE</button>
-        <div id="loader" class="loading-spinner">Analyzing London Sky...</div>
+
+        <div class="spotify-widget">
+          <img id="album-art" src="https://via.placeholder.com/50" alt="Art" />
+          <div class="track-info">
+            <p id="playlist-name">Standby</p>
+            <p id="track-details">Waiting for Aimos...</p>
+          </div>
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg"
+            class="spotify-icon"
+            alt="Spotify"
+          />
+        </div>
+      </main>
+
+      <footer class="controls">
+        <div class="button-group">
+          <button id="btn-power-off" class="power-btn off" onclick="powerOff()">
+            POWER OFF
+          </button>
+          <button id="btn-power-on" class="power-btn on" onclick="powerOn()">
+            POWER ON
+          </button>
+        </div>
+
+        <div class="system-status">
+          <p>
+            Power: <span id="status-text-power">OFF</span>
+            <span id="status-dot">●</span>
+          </p>
+          <p>State: [<span id="status-text-state">STANDBY</span>]</p>
+        </div>
+      </footer>
     </div>
+
     <script>
-        async function updateVibe(){
-            const btn = document.getElementById('sync-btn');
-            const loader = document.getElementById('loader');
+      async function powerOn() {
+        const btnOn = document.getElementById("btn-power-on");
+        const vibeName = document.getElementById("vibe-name");
+        const statusDot = document.getElementById("status-dot");
+        const albumArt = document.getElementById("album-art");
+        const playlistName = document.getElementById("playlist-name");
+        const trackDetails = document.getElementById("track-details");
 
-            btn.disabled = true;
-            loader.innerText = "THINKING...";
-            loader.style.display = 'block';
+        btnOn.disabled = true;
+        vibeName.innerText = "Syncing...";
 
-            try{
-                const response = await fetch('/api/update_vibe');
-                const data = await response.json();
+        try {
+          const response = await fetch("/api/update_vibe");
+          const data = await response.json();
 
-                document.getElementById('vibe-name').innerText = data.vibe_name;
-                document.getElementById('reason').innerText = data.reason;
-                document.getElementById('spotify-query').innerText = "♫ " + data.spotify_query;
+          if (data.status === "success") {
+            document.getElementById("vibe-name").innerText = data.vibe_name;
 
-                const [r, g, b] = data.led_rgb;
-                document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('reason').innerText = "Oops! Connection lost in the fog.";
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "SYNC VIBE";
-                loader.style.display = "none";
+            if (data.spotify) {
+              document.getElementById("album-art").src = data.spotify.album_art;
+              albumArt.style.opacity = "1";
+              document.getElementById("playlist-name").innerText =
+                data.spotify.playlist;
+              document.getElementById("track-details").innerText =
+                `${data.spotify.track} • ${data.spotify.artist}`;
             }
-            
+
+            const [r, g, b] = data.rgb;
+            document.body.style.background = `radial-gradient(circle at center, rgb(${r}, ${g}, ${b}) 0%, #000 120%)`;
+
+            document.getElementById("status-text-power").innerText = "ON";
+            document.getElementById("status-dot").style.color = "#4ade80";
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          btnOn.disabled = false;
         }
+      }
+
+      async function powerOff() {
+        try {
+          await fetch("/api/stop_vibe");
+        } catch (e) {
+          console.error("Failed to stop music");
+        }
+        document.getElementById("vibe-name").innerText = "Sleep Mode";
+        document.getElementById("status-text-power").innerText = "OFF";
+        document.getElementById("status-text-state").innerText = "STANDBY";
+        document.getElementById("status-dot").style.color = "#666";
+        document.getElementById("playlist-name").innerText = "Standby";
+        document.getElementById("track-details").innerText =
+          "Aimos is resting.";
+        document.getElementById("album-art").style.opacity = "0";
+        document.getElementById("album-art").src =
+          "https://via.placeholder.com/50";
+
+        document.body.style.background = "#000";
+      }
     </script>
-        </div></html>
+  </body>
+</html>

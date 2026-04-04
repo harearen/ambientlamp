@@ -37,7 +37,7 @@ def update_vibe():
 
         vibe = get_ai_vibe(weather_info["status"], weather_info["temp"], current_time)
 
-        is_spotify_success = play_vibe(
+        success, spotify_info = play_vibe(
             vibe["spotify_query"], 
             SPOTIPY_CLIENT_ID, 
             SPOTIPY_CLIENT_SECRET, 
@@ -52,12 +52,13 @@ def update_vibe():
 
         
         return jsonify({
-            "vibe_name": vibe["vibe_name"],
-            "reason": vibe["reason"],
-            "spotify_query": vibe["spotify_query"],
-            "rgb": [r, g, b],
-            "spotify_status": "success" if is_spotify_success else "error"
-        })
+        "status": "success",
+        "vibe_name": vibe["vibe_name"],
+        "reason": vibe["reason"],
+        "rgb": [r, g, b],
+        "spotify": spotify_info,
+        "spotify_status": "success" if success else "error"
+    })
 
     except Exception as e:
         print(f"Error during update: {e}")
@@ -65,6 +66,20 @@ def update_vibe():
             "error": str(e),
             "status": "critical_error"
         }), 500
+    
+@app.route('/api/stop_vibe')
+def stop_vibe():
+    try:
+       from utils.spotify import stop_spotify
+       success = stop_spotify(
+            os.getenv("SPOTIPY_CLIENT_ID") or os.getenv("SPOTIFY_CLIENT_ID"),
+            os.getenv("SPOTIPY_CLIENT_SECRET") or os.getenv("SPOTIFY_CLIENT_SECRET"),
+            os.getenv("SPOTIPY_REDIRECT_URI") or os.getenv("SPOTIFY_REDIRECT_URI")
+        )
+       return jsonify({"status": "success" if success else "error"})
+    except Exception as e:
+        print(f"Stop error: {e}")
+        return jsonify({"status": "error"}), 500  
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

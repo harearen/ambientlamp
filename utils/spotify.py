@@ -39,9 +39,25 @@ def play_vibe(query, client_id, client_secret, redirect_uri):
             playlist_id = playlist['id']
             playlist_name = playlist['name']
             playlist_uri = playlist['uri']
+            album_art = playlist['images'][0]['url'] if playlist['images'] else ""
             
             sp.start_playback(device_id=active_device_id, context_uri=playlist_uri)
-            return True  
+
+            import time
+            time.sleep(1)
+            current_track = sp.current_user_playing_track()
+
+            if current_track and current_track.get('item'):
+                track_name = current_track['item']['name']
+                artist_name = ", ".join([artist['name'] for artist in current_track['item']['artists']])
+                print(f"🎶 Now playing: '{track_name}' by {artist_name} from playlist '{playlist_name}'"
+        )
+            return True, {
+                    "track": track_name,
+                    "artist": artist_name,
+                    "album_art": album_art,
+                    "playlist": playlist['name']
+                }
         else:
             print(f"⚠️ No playlist found for query: {query}")
             return False 
@@ -49,3 +65,23 @@ def play_vibe(query, client_id, client_secret, redirect_uri):
     except Exception as e:
         print(f"Spotify play errpr: {e}")
         print("Quick tip: Make sure you've got Spotify running on your phone or PC!")
+
+def stop_spotify(client_id, client_secret, redirect_uri):
+    scope = "user-modify-playback-state user-read-playback-state"
+
+    auth_manager = SpotifyOAuth(
+        client_id=client_id,
+        client_secret=client_secret,
+        redirect_uri=redirect_uri,
+        scope=scope,
+        cache_path=".spotify_cache",
+        open_browser=False)
+
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+
+    try:
+        sp.pause_playback()
+        return True
+    except Exception as e:
+        print(f"Spotify stop error: {e}")
+        return False
