@@ -4,13 +4,16 @@ from dotenv import load_dotenv
 
 from utils.director import get_ai_vibe
 from utils.weather import fetch_london_weather
-# from utils.spotify import play_vibe
+from utils.spotify import play_vibe
 from utils.led_sim import hsv_to_rgb_normalized
 
 load_dotenv()
 
 app = Flask(__name__)
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+SPOTIPY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+SPOTIPY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI")
 
 @app.route('/')
 def index():
@@ -18,7 +21,7 @@ def index():
 
 @app.route('/api/update_vibe')
 def update_vibe():
-    # 処理全体を try で囲む必要があります
+
     try:
         weather_info = fetch_london_weather(OPENWEATHER_API_KEY)
         if not weather_info:
@@ -26,7 +29,12 @@ def update_vibe():
 
         vibe = get_ai_vibe(weather_info["status"], weather_info["temp"])
 
-        # play_vibe(...)
+        is_spotify_success = play_vibe(
+            vibe["spotify_query"], 
+            SPOTIPY_CLIENT_ID, 
+            SPOTIPY_CLIENT_SECRET, 
+            SPOTIPY_REDIRECT_URI
+        )
 
         h = vibe.get("hue", 0)
         s = vibe.get("saturation", 0)
@@ -34,17 +42,21 @@ def update_vibe():
 
         r, g, b = hsv_to_rgb_normalized(h, s, v)
 
-        # フロントエンドに返すデータを整形
+        
         return jsonify({
             "vibe_name": vibe["vibe_name"],
             "reason": vibe["reason"],
             "spotify_query": vibe["spotify_query"],
-            "rgb": [r, g, b] 
+            "rgb": [r, g, b],
+            "spotify_status": "success" if is_spotify_success else "error"
         })
 
     except Exception as e:
         print(f"Error during update: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": str(e),
+            "status": "critical_error"
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

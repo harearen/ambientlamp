@@ -1,8 +1,8 @@
 import os
 import json
-from google.genai import Client 
+# from google.genai import Client 
 
-client = Client(api_key=os.getenv("GEMINI_API_KEY"))
+# client = Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def get_ai_vibe(status, temp): 
 
