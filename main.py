@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from utils.director import get_ai_vibe
 from utils.weather import fetch_london_weather
 from utils.spotify import play_vibe
+from utils.led_sim import hsv_to_rgb_normalized
 
 
 load_dotenv()
@@ -27,28 +28,22 @@ def main():
         current_temp = weather_info["temp"]
         print(f"success: current weather in London is [{current_status}], temp is [{current_temp}]")
 
-    #     vibe = get_vibe(current_status)
-
-    #     print(f"{vibe['color_code']}🎬 Applying Vibe: {vibe['vibe_name']}\033[0m")
-
-    #     print(f"{vibe['color_code']}██████████████████████████████\033[0m")
-    #     print(f"{vibe['color_code']}      VIRTUAL LAMP: ON        \033[0m")
-    #     print(f"{vibe['color_code']}██████████████████████████████\033[0m")
-
-    #     print("🎵 Attempting to play Spotify...")
-    #     play_vibe(
-    #         vibe['playlist_id'], 
-    #         SPOTIFY_CLIENT_ID, 
-    #         SPOTIFY_CLIENT_SECRET, 
-    #         SPOTIFY_REDIRECT_URI
-    #     )
-    # else:
-    #     print("It's failed to fetch weather data.")
-
     vibe = get_ai_vibe(status, temp)
 
-    terminal_color = f"\033[38;5;{int(vibe['hue'] % 255)}m"
+    h=vibe.get("hue", 0)
+    s=vibe.get("saturation", 0)
+    v=vibe.get("brightness", 0)
+
+    r, g, b = hsv_to_rgb_normalized(h, s, v)
+
+    terminal_color = f"\033[38;2;{r};{g};{b}m"
     reset = "\033[0m"
+
+    print(f"\n{terminal_color}██████████████████████████████")
+    print(f"🎬 VIBE: {vibe['vibe_name']}")
+    print(f"💡 LED RGB: ({r}, {g}, {b})")
+    print(f"📜 REASON: {vibe['reason']}")
+    print(f"██████████████████████████████{reset}\n")
 
     print(f"\n{terminal_color}🎬 VIBE NAME: {vibe['vibe_name']}")
     print(f"📜 INTENT: {vibe['reason']}")

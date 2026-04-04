@@ -14,6 +14,8 @@ def get_ai_vibe(status, temp):
     - "spotify_query": A specific search term for a Spotify playlist.
     - "reason": Why you chose this (short sentence).
     - "hue": A number between 0 and 65535 for a smart light.
+    - "saturation": 0-255 (Vividness: 0 is white, 255 is pure color)
+    - "brightness": 0-255 (Intensity: 0 is off, 255 is max)
     """
 
     response = client.models.generate_content(
