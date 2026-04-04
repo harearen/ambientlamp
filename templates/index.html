@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aimos</title>
+    <style>
+      :root {
+        --bg-color: #1a1a1a;
+        --accent-color: #ffffff;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background-color: var(--bg-color);
+        color: var(--accent-color);
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        transition: background-color 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+      }
+
+      .glass-card {
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 3rem 2rem;
+        border-radius: 30px;
+        text-align: center;
+        width: 85%;
+        max-width: 450px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 1rem 0;
+        letter-spacing: -0.02em;
+      }
+
+      #reason {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        opacity: 0.7;
+        margin-bottom: 2rem;
+        min-height: 3.2em;
+      }
+
+      .spotify-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8rem;
+        font-size: 0.9rem;
+        color: #1db954;
+        font-weight: 600;
+        margin-bottom: 2.5rem;
+      }
+
+      button {
+        background-color: var(--accent-color);
+        color: black;
+        border: none;
+        padding: 1.2rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 100px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+        opacity: 0.9;
+      }
+
+      button:active {
+        transform: translateY(0);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        opacity: 0.9;
+      }
+
+      .loading-spinner {
+        display: none;
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+    <body>
+        <div class="glass-card">
+            <h1 id="vibe-name">Loading...</h1>
+            <p id="reason">Syncing your room with London's atmosphere.</p>
+        
+        <div class="spotify-status">
+            <span id="spotify-query">Waiting for AI input...</span>
+        </div>
+        
+        <button id="sync-btn" onclick="updateVibe()">SYNC VIBE</button>
+        <div id="loader" class="loading-spinner">Analyzing London Sky...</div>
+    </div>
+    <script>
+        async function updateVibe(){
+            const btn = document.getElementById('sync-btn');
+            const loader = document.getElementById('loader');
+
+            btn.disabled = true;
+            loader.innerText = "THINKING...";
+            loader.style.display = 'block';
+
+            try{
+                const response = await fetch('/api/update_vibe');
+                const data = await response.json();
+
+                document.getElementById('vibe-name').innerText = data.vibe_name;
+                document.getElementById('reason').innerText = data.reason;
+                document.getElementById('spotify-query').innerText = "♫ " + data.spotify_query;
+
+                const [r, g, b] = data.led_rgb;
+                document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('reason').innerText = "Oops! Connection lost in the fog.";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "SYNC VIBE";
+                loader.style.display = "none";
+            }
+            
+        }
+    </script>
+        </div></html>
