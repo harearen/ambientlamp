@@ -4,7 +4,9 @@ import json
 
 # client = Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-def get_ai_vibe(status, temp): 
+def get_ai_vibe(status, temp, current_time=None): 
+
+    # print(f"🕒 Processing vibe for London at {current_time}:00 (Weather: {status})")
 
     # prompt = f"""
     # Current London Weather: {status}, Temperature: {temp}°C.

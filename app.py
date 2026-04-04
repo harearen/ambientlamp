@@ -1,4 +1,6 @@
 import os
+import pytz
+from datetime import datetime
 from flask import Flask, render_template, jsonify
 from dotenv import load_dotenv
 
@@ -23,11 +25,17 @@ def index():
 def update_vibe():
 
     try:
+        london_tz = pytz.timezone('Europe/London')
+        now_london = datetime.now(london_tz)
+        current_time = now_london.strftime("%Y-%m-%d %H:%M:%S")
+
+        print(f"🕒 Updating vibe at {current_time} in London...")
+
         weather_info = fetch_london_weather(OPENWEATHER_API_KEY)
         if not weather_info:
             return jsonify({"error": "Failed to fetch weather data"}), 500
 
-        vibe = get_ai_vibe(weather_info["status"], weather_info["temp"])
+        vibe = get_ai_vibe(weather_info["status"], weather_info["temp"], current_time)
 
         is_spotify_success = play_vibe(
             vibe["spotify_query"], 
