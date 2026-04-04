@@ -1,4 +1,4 @@
 .env
 .cache
 .spotify_cache
-__pycache__/
+utils/__pycache__
