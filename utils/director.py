@@ -1,47 +1,44 @@
-import os
 import json
-# from google.genai import Client 
 
-# client = Client(api_key=os.getenv("GEMINI_API_KEY"))
+def get_ai_vibe(weather_status, temp, time_info):
+    
+    prompt = f"""
+    Current context in London:
+    - Time: {time_info['full_date_time']} ({time_info['period']})
+    - Weather: {weather_status}
+    - Temperature: {temp}°C
+    - Weekend: {"Yes" if time_info['is_weekend'] else "No"}
 
-def get_ai_vibe(status, temp, current_time=None): 
+    Based on the above, act as a creative director for a "Space Engine" ambient lamp.
+    The lamp has a stone base and a clear sphere. Suggest a vibe that matches the 
+    specific atmosphere of London right now.
 
-    # print(f"🕒 Processing vibe for London at {current_time}:00 (Weather: {status})")
+    Return ONLY a JSON object:
+    - "vibe_name": A creative name (e.g., "Midnight Soho Rain", "Sunday Roast Glow").
+    - "spotify_query": A specific search term for a matching Spotify playlist.
+    - "reason": Why this matches the current London vibe (short sentence).
+    - "hue": 0-65535 (Color)
+    - "saturation": 0-255 (Vividness)
+    - "brightness": 0-255 (Intensity)
+    """
 
-    # prompt = f"""
-    # Current London Weather: {status}, Temperature: {temp}°C.
-    # Suggest a creative 'vibe' for my room.
-    # Return ONLY a JSON object with these keys:
-    # - "vibe_name": A creative name for the mood.
-    # - "spotify_query": A specific search term for a Spotify playlist.
-    # - "reason": Why you chose this (short sentence).
-    # - "hue": A number between 0 and 65535 for a smart light.
-    # - "saturation": 0-255 (Vividness: 0 is white, 255 is pure color)
-    # - "brightness": 0-255 (Intensity: 0 is off, 255 is max)
-    # """
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash", 
+            contents=prompt,
+            config={'response_mime_type': 'application/json'}
+        )
+        
+        vibe_data = json.loads(response.text)
+        return vibe_data
 
-    # response = client.models.generate_content(
-    #     model="gemini-2.5-flash",
-    #     contents=prompt,
-    #     config={'response_mime_type': 'application/json'}
-    # )
-
-    # try:
-    #     raw_text = response.text.strip().replace('```json', '').replace('```', '')
-    #     vibe_data = json.loads(raw_text)
-
-    #     if isinstance(vibe_data, dict) and "hue" in vibe_data:
-    #         return vibe_data
-    # except Exception as e:
-    #     print(f"Manual Parse Error: {e}")
-
-    # print("Using fallback vibe.")
-    print("🛠️  [Dev Mode] Returning Mock Vibe Data (Token Saved)")
-    return {
-        "vibe_name": "Development Indigo",
-        "spotify_query": "deep focus ambient",
-        "reason": "Currently in development mode. Saving tokens for the big demo!",
-        "hue": 43690,      # 青系の色
-        "saturation": 200,
-        "brightness": 150
-    }
+    except Exception as e:
+        print(f"Gemini API or Parse Error: {e}")
+        return {
+            "vibe_name": "London Default",
+            "spotify_query": "London Lo-fi",
+            "reason": "Something went wrong, but keep the vibe going.",
+            "hue": 40000,
+            "saturation": 100,
+            "brightness": 150
+        }

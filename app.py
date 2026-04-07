@@ -27,15 +27,25 @@ def update_vibe():
     try:
         london_tz = pytz.timezone('Europe/London')
         now_london = datetime.now(london_tz)
-        current_time = now_london.strftime("%Y-%m-%d %H:%M:%S")
 
-        print(f"🕒 Updating vibe at {current_time} in London...")
+        time_context = {
+            "full_date_time": now_london.strftime("%Y-%m-%d %H:%M:%S"),
+            "hour": now_london.hour,
+            "period": "Morning" if 5 <= now_london.hour < 12 else 
+                      "Afternoon" if 12 <= now_london.hour < 18 else 
+                      "Evening" if 18 <= now_london.hour < 22 else "Night",
+            "is_weekend": now_london.weekday() >= 5
+        }
 
         weather_info = fetch_london_weather(OPENWEATHER_API_KEY)
         if not weather_info:
             return jsonify({"error": "Failed to fetch weather data"}), 500
 
-        vibe = get_ai_vibe(weather_info["status"], weather_info["temp"], current_time)
+        vibe = get_ai_vibe(
+            weather_status=weather_info["status"], 
+            temp=weather_info["temp"], 
+            time_info=time_context  
+        )
 
         success, spotify_info = play_vibe(
             vibe["spotify_query"], 
