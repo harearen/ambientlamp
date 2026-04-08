@@ -1,6 +1,10 @@
 import json
+import os
+from google.genai import Client
 
 def get_ai_vibe(weather_status, temp, time_info):
+    api_key = os.getenv("GEMINI_API_KEY")
+    client = Client(api_key=api_key)
     
     prompt = f"""
     Current context in London:

@@ -8,6 +8,7 @@ from utils.director import get_ai_vibe
 from utils.weather import fetch_london_weather
 from utils.spotify import play_vibe
 from utils.led_sim import hsv_to_rgb_normalized
+from utils.hardware import update_physical_led
 
 load_dotenv()
 
@@ -60,6 +61,7 @@ def update_vibe():
 
         r, g, b = hsv_to_rgb_normalized(h, s, v)
 
+        update_physical_led(r, g, b)
         
         return jsonify({
         "status": "success",
