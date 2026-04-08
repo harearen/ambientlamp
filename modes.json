@@ -1,0 +1,18 @@
+{
+  "custom_modes": [
+    {
+      "id": "ai_vibe",
+      "name": "London Vibe",
+      "is_ai": true,
+      "description": "Synced with London Sky"
+    },
+    {
+      "id": "study_mode",
+      "name": "Deep Study",
+      "is_ai": false,
+      "rgb": [60, 100, 255],
+      "spotify_query": "Lofi Study Focus",
+      "description": "Focus for Harena"
+    }
+  ]
+}

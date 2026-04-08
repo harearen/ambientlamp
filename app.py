@@ -1,5 +1,6 @@
 import os
 import pytz
+import json  # 追加
 from datetime import datetime
 from flask import Flask, render_template, jsonify
 from dotenv import load_dotenv
@@ -14,17 +15,36 @@ load_dotenv()
 
 app = Flask(__name__)
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
-SPOTIPY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-SPOTIPY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI")
+SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID") or os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIPY_CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET") or os.getenv("SPOTIFY_CLIENT_SECRET")
+SPOTIPY_REDIRECT_URI = os.getenv("SPOTIPY_REDIRECT_URI") or os.getenv("SPOTIFY_REDIRECT_URI")
+
+# --- Helper Functions ---
+def load_modes():
+    """modes.json を読み込む"""
+    modes_path = os.path.join(os.path.dirname(__file__), 'modes.json')
+    try:
+        with open(modes_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get("custom_modes", []) # custom_modesの中身だけ返す
+    except Exception as e:
+        print(f"JSON Load Error: {e}")
+        return []
+
+# --- Routes ---
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/api/get_modes')
+def get_modes_api():
+    """フロントエンドに全モードを返す"""
+    modes = load_modes()
+    return jsonify({"custom_modes": modes})
+
 @app.route('/api/update_vibe')
 def update_vibe():
-
     try:
         london_tz = pytz.timezone('Europe/London')
         now_london = datetime.now(london_tz)
@@ -55,42 +75,57 @@ def update_vibe():
             SPOTIPY_REDIRECT_URI
         )
 
-        h = vibe.get("hue", 0)
-        s = vibe.get("saturation", 0)
-        v = vibe.get("brightness", 0)
-
+        h, s, v = vibe.get("hue", 0), vibe.get("saturation", 0), vibe.get("brightness", 0)
         r, g, b = hsv_to_rgb_normalized(h, s, v)
-
         update_physical_led(r, g, b)
         
         return jsonify({
-        "status": "success",
-        "vibe_name": vibe["vibe_name"],
-        "reason": vibe["reason"],
-        "rgb": [r, g, b],
-        "spotify": spotify_info,
-        "spotify_status": "success" if success else "error"
-    })
-
+            "status": "success",
+            "vibe_name": vibe["vibe_name"],
+            "rgb": [r, g, b],
+            "spotify": spotify_info
+        })
     except Exception as e:
         print(f"Error during update: {e}")
-        return jsonify({
-            "error": str(e),
-            "status": "critical_error"
-        }), 500
+        return jsonify({"error": str(e)}), 500
     
+@app.route('/api/play_mode/<mode_id>')
+def play_mode(mode_id):
+    modes = load_modes()
+    # modes はリストになっているのでそのまま検索
+    mode = next((m for m in modes if m["id"] == mode_id), None)
+
+    if not mode:
+        return jsonify({"error": "Mode not found"}), 404
+    
+    if mode.get('is_ai'):
+        return update_vibe() 
+    
+    # Custom Mode Logic
+    r, g, b = mode['rgb']
+    update_physical_led(r, g, b)
+
+    success, spotify_info = play_vibe(
+        mode["spotify_query"], 
+        SPOTIPY_CLIENT_ID, 
+        SPOTIPY_CLIENT_SECRET, 
+        SPOTIPY_REDIRECT_URI
+    )
+
+    return jsonify({
+        "status": "success",
+        "vibe_name": mode["name"],
+        "rgb": [r, g, b],
+        "spotify": spotify_info
+    })
+
 @app.route('/api/stop_vibe')
 def stop_vibe():
     try:
        from utils.spotify import stop_spotify
-       success = stop_spotify(
-            os.getenv("SPOTIPY_CLIENT_ID") or os.getenv("SPOTIFY_CLIENT_ID"),
-            os.getenv("SPOTIPY_CLIENT_SECRET") or os.getenv("SPOTIFY_CLIENT_SECRET"),
-            os.getenv("SPOTIPY_REDIRECT_URI") or os.getenv("SPOTIFY_REDIRECT_URI")
-        )
+       success = stop_spotify(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI)
        return jsonify({"status": "success" if success else "error"})
     except Exception as e:
-        print(f"Stop error: {e}")
         return jsonify({"status": "error"}), 500  
 
 if __name__ == '__main__':
