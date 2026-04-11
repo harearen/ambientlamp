@@ -245,6 +245,49 @@
         <h1>Aimos</h1>
       </header>
 
+      <div class="vibe-display" style="padding: 10px 0">
+        <h2
+          id="vibe-name"
+          style="font-size: 1.2rem; font-weight: 300; margin: 0"
+        >
+          Ready
+        </h2>
+
+        <div
+          class="spotify-widget"
+          style="
+            margin: 15px auto;
+            width: 80%;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          "
+        >
+          <img
+            id="album-art"
+            src=""
+            style="
+              width: 40px;
+              height: 40px;
+              border-radius: 4px;
+              opacity: 0;
+              transition: opacity 0.5s;
+            "
+          />
+          <div style="text-align: left; font-size: 0.7rem; overflow: hidden">
+            <p id="playlist-name" style="margin: 0; font-weight: 600">
+              Standby
+            </p>
+            <p id="track-details" style="margin: 0; opacity: 0.7">
+              Tap POWER ON
+            </p>
+          </div>
+        </div>
+      </div>
+
       <main class="swiper">
         <div class="swiper-wrapper" id="mode-cards-container"></div>
       </main>
