@@ -176,12 +176,21 @@ def play_mode(mode_id):
 
 @app.route('/api/stop_vibe')
 def stop_vibe():
-    """Stops the current Spotify playback"""
+    """Stops the current Spotify playback and turns off the LEDs"""
     try:
+       # 1. Turn off the physical LEDs (RGB: 0, 0, 0)
+       update_physical_led(0, 0, 0)
+
+       # 2. Stop Spotify playback
        from utils.spotify import stop_spotify
        success = stop_spotify(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI)
-       return jsonify({"status": "success" if success else "error"})
+       
+       return jsonify({
+           "status": "success" if success else "error",
+           "message": "Lights turned off and music stopped"
+       })
     except Exception as e:
+        print(f"Error during stop_vibe: {e}")
         return jsonify({"status": "error"}), 500  
 
 if __name__ == '__main__':
