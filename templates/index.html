@@ -365,42 +365,47 @@
       async function powerOn() {
         const btnOn = document.getElementById("btn-power-on");
         const vibeName = document.getElementById("vibe-name");
-        const statusDot = document.getElementById("status-dot");
         const albumArt = document.getElementById("album-art");
-        const playlistName = document.getElementById("playlist-name");
-        const trackDetails = document.getElementById("track-details");
 
-        btnOn.disabled = true;
-        vibeName.innerText = "Syncing...";
+        if (btnOn) btnOn.disabled = true;
+        if (vibeName) vibeName.innerText = "Syncing...";
 
         try {
           const response = await fetch("/api/update_vibe");
           const data = await response.json();
 
           if (data.status === "success") {
-            document.getElementById("vibe-name").innerText = data.vibe_name;
+            if (vibeName) vibeName.innerText = data.vibe_name;
 
-            if (data.spotify) {
-              document.getElementById("album-art").src = data.spotify.album_art;
-              albumArt.style.opacity = "1";
-              document.getElementById("playlist-name").innerText =
-                data.spotify.playlist;
-              document.getElementById("track-details").innerText =
-                `${data.spotify.track} • ${data.spotify.artist}`;
+            if (data.spotify && data.spotify.album_art) {
+              if (albumArt) {
+                albumArt.src = data.spotify.album_art;
+                albumArt.style.opacity = "1";
+              }
+              const pName = document.getElementById("playlist-name");
+              const tDetails = document.getElementById("track-details");
+              if (pName) pName.innerText = data.spotify.playlist || "Playing";
+              if (tDetails)
+                tDetails.innerText = `${data.spotify.track} • ${data.spotify.artist}`;
             }
 
+            // 背景色の更新
             const [r, g, b] = data.rgb;
             document.body.style.background = `radial-gradient(circle at center, rgb(${r}, ${g}, ${b}) 0%, #000 120%)`;
 
-            document.getElementById("power-overlay").style.opacity = "0";
+            const powerText = document.getElementById("status-text-power");
+            const dot = document.getElementById("status-dot");
+            if (powerText) powerText.innerText = "ON";
+            if (dot) dot.style.color = "#4ade80";
 
-            document.getElementById("status-text-power").innerText = "ON";
-            document.getElementById("status-dot").style.color = "#4ade80";
+            const overlay = document.getElementById("power-overlay");
+            if (overlay) overlay.style.opacity = "0";
           }
         } catch (error) {
-          console.error(error);
+          console.error("Fetch error:", error);
+          if (vibeName) vibeName.innerText = "Error occurred";
         } finally {
-          btnOn.disabled = false;
+          if (btnOn) btnOn.disabled = false;
         }
       }
 
